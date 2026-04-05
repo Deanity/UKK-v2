@@ -66,39 +66,77 @@ Tugas_UKK_React/
 
 ---
 
-## ⚙️ Cara Menjalankan
+## 🚀 Panduan Instalasi (Start Here)
 
-### 1. Backend (PHP)
+Pilih salah satu metode di bawah ini untuk menjalankan aplikasi:
 
-Pastikan PHP dan MySQL sudah berjalan (bisa via XAMPP / Laragon).
+### Metode A: Menggunakan Docker (Rekomendasi ⚡)
+Pastikan Anda sudah menginstal [Docker Desktop](https://www.docker.com/products/docker-desktop/).
 
+1. **Clone Repository**
+   ```bash
+   git clone https://github.com/Deanity/UKK-v2.git
+   cd UKK-v2
+   ```
+
+2. **Jalankan Docker Compose**
+   ```bash
+   docker compose up -d --build
+   ```
+   *Perintah ini akan otomatis menginstal library frontend (npm), konfigurasi backend, dan import database.*
+
+3. **Selesai!**
+   Aplikasi siap diakses sesuai tabel [Akses URL](#-akses-url).
+
+---
+
+### Metode B: Instalasi Manual (Tanpa Docker)
+Pastikan PHP (>= 8.1), MySQL, dan Node.js sudah terinstal.
+
+#### 1. Persiapan Database
+1. Buka **phpMyAdmin**.
+2. Buat database baru dengan nama `db_ukk`.
+3. Import file SQL: `backend/storage/storage.sql`.
+4. Sesuaikan koneksi database di `backend/config/database.php`.
+   > **Penting:** Ubah `$host = "db"` menjadi `$host = "localhost"` jika Anda tidak menggunakan Docker.
+
+#### 2. Menjalankan Backend (PHP)
 ```bash
 cd backend
+# Jika menggunakan PHP CLI (Alternatif XAMPP)
 php -S localhost:8000
 ```
 
-> Lakukan juga import database SQL ke MySQL terlebih dahulu.
-
-### 2. Frontend (React)
-
+#### 3. Menjalankan Frontend (React)
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-Aplikasi tersedia di: **http://localhost:5173**
+---
+
+## 🔗 Akses URL
+
+| Layanan | URL | Keterangan |
+|---------|-----|------------|
+| **Frontend** | [http://localhost:5173](http://localhost:5173) | UI Utama Aplikasi |
+| **Backend API** | [http://localhost:8000](http://localhost:8000) | Endpoint API |
+| **Documentation** | [http://localhost:8000/docs.php](http://localhost:8000/docs.php) | Dokumentasi API (Swagger-like) |
+| **phpMyAdmin** | [http://localhost:8090](http://localhost:8090) | Kelola Database (Khusus Docker) |
 
 ---
 
-## 🔐 Akun Default (Contoh)
+---
+
+## 🔐 Akun Dummy
 
 | Role | Username | Password |
 |------|----------|----------|
-| Admin | `admin01` | `rahasia123` |
-| Guru | `guru01` | `rahasia123` |
-| BK | `bk01` | `rahasia123` |
-| Siswa | `andi05` | `rahasia123` |
+| Admin | `admin` | `admin123` |
+| Guru | `guru1` | `guru123` |
+| BK | `bk1` | `bk123` |
+| Siswa | `siswa1` | `siswa123` |
 
 > ⚠️ Sesuaikan dengan data di database masing-masing.
 
