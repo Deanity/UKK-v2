@@ -56,6 +56,8 @@ import {
   Phone,
   Briefcase,
   MapPin,
+  Calendar,
+  Eye,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -65,6 +67,8 @@ const emptyOrangTua = (): OrangTuaPayload => ({
   hubungan: "",
   telp: "",
   pekerjaan: "",
+  tanggal_lahir: "",
+  tempat_lahir: "",
   alamat: "",
 });
 
@@ -168,6 +172,11 @@ function StudentHoverDetails({ studentId }: { studentId: number }) {
                 <span className="flex items-center gap-1.5"><Phone className="h-3 w-3" /> {ot.telp || "-"}</span>
                 <span className="flex items-center gap-1.5 truncate"><Briefcase className="h-3 w-3" /> {ot.pekerjaan || "-"}</span>
                 <span className="flex items-center gap-1.5 truncate"><MapPin className="h-3 w-3" /> {ot.alamat || "-"}</span>
+                {(ot.tempat_lahir || ot.tanggal_lahir) && (
+                   <span className="flex items-center gap-1.5 truncate">
+                     <Calendar className="h-3 w-3" /> {ot.tempat_lahir || "-"}, {ot.tanggal_lahir || "-"}
+                   </span>
+                )}
               </div>
             </div>
           ))}
@@ -200,6 +209,10 @@ export default function AdminStudents() {
   const [editPoin, setEditPoin] = useState({ poin: 0, total_poin: 0 });
   const [siswaForm, setSiswaForm] = useState<SiswaForm>(emptySiswaForm());
   const [orangTuaList, setOrangTuaList] = useState<OrangTuaPayload[]>([emptyOrangTua()]);
+
+  // ─── Detail modal state ──────────────────────────────────────────
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [detailStudentId, setDetailStudentId] = useState<number | null>(null);
 
   // ─── Delete state ─────────────────────────────────────────────────
   const [deleteTarget, setDeleteTarget] = useState<ApiStudent | null>(null);
@@ -318,6 +331,8 @@ export default function AdminStudents() {
             hubungan: ot.hubungan,
             telp: ot.telp,
             pekerjaan: ot.pekerjaan,
+            tanggal_lahir: ot.tanggal_lahir || "",
+            tempat_lahir: ot.tempat_lahir || "",
             alamat: ot.alamat,
           }))
           : [emptyOrangTua()]
@@ -357,7 +372,19 @@ export default function AdminStudents() {
       return false;
     }
 
-    // Cek duplikat
+    // Cek hubungan duplikat (Ayah/Ibu/Wali hanya boleh satu)
+    const hubs = orangTuaList.map(ot => ot.hubungan);
+    const hasDuplicateHub = hubs.some((h, idx) => hubs.indexOf(h) !== idx && h !== "");
+    if (hasDuplicateHub) {
+      toast({ 
+        title: "Hubungan duplikat", 
+        description: "Setiap kategori hubungan (Ayah/Ibu/Wali) hanya boleh diisi satu kali.", 
+        variant: "destructive" 
+      });
+      return false;
+    }
+
+    // Cek duplikat data siswa lain (username/NIS/email)
     const dupMsg = checkDuplicate(siswaForm, editTargetId);
     if (dupMsg) {
       toast({ title: "Data sudah ada", description: dupMsg, variant: "destructive" });
@@ -426,6 +453,11 @@ export default function AdminStudents() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const openDetail = (id: number) => {
+    setDetailStudentId(id);
+    setDetailOpen(true);
   };
 
   // ─── Konfirmasi DELETE ────────────────────────────────────────────
@@ -535,7 +567,7 @@ export default function AdminStudents() {
                 {paged.map((s) => (
                   <HoverCard key={s.id} openDelay={200} closeDelay={100}>
                     <HoverCardTrigger asChild>
-                      <TableRow className="cursor-pointer transition-colors hover:bg-muted/50 data-[state=open]:bg-muted">
+                      <TableRow className="transition-colors hover:bg-muted/50 data-[state=open]:bg-muted">
                         <TableCell className="font-mono text-xs">{s.nis}</TableCell>
                         <TableCell className="font-medium">{s.nama}</TableCell>
                         <TableCell>{s.kelas}</TableCell>
@@ -547,6 +579,9 @@ export default function AdminStudents() {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-1">
+                            <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); openDetail(s.id); }}>
+                              <Eye className="h-4 w-4 text-primary" />
+                            </Button>
                             <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); openEdit(s); }}>
                               <Pencil className="h-4 w-4" />
                             </Button>
@@ -557,7 +592,7 @@ export default function AdminStudents() {
                         </TableCell>
                       </TableRow>
                     </HoverCardTrigger>
-                    <HoverCardContent className="w-80" align="start" sideOffset={8}>
+                    <HoverCardContent className="w-80" align="start" sideOffset={8} onClick={(e) => e.stopPropagation()}>
                       <StudentHoverDetails studentId={s.id} />
                     </HoverCardContent>
                   </HoverCard>
@@ -755,6 +790,14 @@ export default function AdminStudents() {
                         <Label className="text-xs">Pekerjaan</Label>
                         <Input value={ot.pekerjaan} onChange={(e) => updateOrangTua(idx, "pekerjaan", e.target.value)} placeholder="Pekerjaan" className="h-8 text-sm" />
                       </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs">Tempat Lahir</Label>
+                        <Input value={ot.tempat_lahir || ""} onChange={(e) => updateOrangTua(idx, "tempat_lahir", e.target.value)} placeholder="Tempat lahir" className="h-8 text-sm" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs">Tanggal Lahir</Label>
+                        <Input type="date" value={ot.tanggal_lahir || ""} onChange={(e) => updateOrangTua(idx, "tanggal_lahir", e.target.value)} className="h-8 text-sm" />
+                      </div>
                       <div className="col-span-2 space-y-1.5">
                         <Label className="text-xs">Alamat</Label>
                         <Input value={ot.alamat} onChange={(e) => updateOrangTua(idx, "alamat", e.target.value)} placeholder="Alamat orang tua" className="h-8 text-sm" />
@@ -781,6 +824,21 @@ export default function AdminStudents() {
               </DialogFooter>
             </>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* ─── Modal Detail Siswa ────────────────────────────────── */}
+      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Detail Lengkap Siswa</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            {detailStudentId && <StudentHoverDetails studentId={detailStudentId} />}
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setDetailOpen(false)}>Tutup</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 

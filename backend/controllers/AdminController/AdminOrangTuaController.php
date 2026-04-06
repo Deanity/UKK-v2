@@ -12,7 +12,7 @@ class AdminOrangTuaController {
 
         global $pdo;
         $stmt = $pdo->prepare("
-            SELECT id, nama, hubungan, telp, pekerjaan, alamat
+            SELECT id, nama, hubungan, telp, pekerjaan, tanggal_lahir, tempat_lahir, alamat
             FROM orang_tua
             WHERE id_siswa = ? AND deleted_at IS NULL
         ");
@@ -66,8 +66,8 @@ class AdminOrangTuaController {
 
         $stmt = $pdo->prepare("
             INSERT INTO orang_tua
-            (id_siswa, nama, hubungan, telp, pekerjaan, alamat, created_at)
-            VALUES (?,?,?,?,?,?,NOW())
+            (id_siswa, nama, hubungan, telp, pekerjaan, tanggal_lahir, tempat_lahir, alamat, created_at)
+            VALUES (?,?,?,?,?,?,?,?,NOW())
         ");
 
         $stmt->execute([
@@ -76,6 +76,8 @@ class AdminOrangTuaController {
             $input['hubungan'],
             $input['telp'] ?? null,
             $input['pekerjaan'] ?? null,
+            $input['tanggal_lahir'] ?? null,
+            $input['tempat_lahir'] ?? null,
             $input['alamat'] ?? null
         ]);
 
@@ -97,6 +99,8 @@ class AdminOrangTuaController {
                 nama = ?,
                 telp = ?,
                 pekerjaan = ?,
+                tanggal_lahir = ?,
+                tempat_lahir = ?,
                 alamat = ?,
                 updated_at = NOW()
             WHERE id = ? AND deleted_at IS NULL
@@ -104,9 +108,11 @@ class AdminOrangTuaController {
 
         $stmt->execute([
             $input['nama'],
-            $input['telp'],
-            $input['pekerjaan'],
-            $input['alamat'],
+            $input['telp'] ?? null,
+            $input['pekerjaan'] ?? null,
+            $input['tanggal_lahir'] ?? null,
+            $input['tempat_lahir'] ?? null,
+            $input['alamat'] ?? null,
             $id
         ]);
 

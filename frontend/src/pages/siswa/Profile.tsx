@@ -189,6 +189,11 @@ export default function SiswaProfile() {
                       <Briefcase className="h-3 w-3" /> {ot.pekerjaan}
                     </div>
                   )}
+                  {(ot.tempat_lahir || ot.tanggal_lahir) && (
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <User className="h-3 w-3" /> {ot.tempat_lahir ? ot.tempat_lahir : "-"}, {ot.tanggal_lahir ? formatTanggal(ot.tanggal_lahir) : "-"}
+                    </div>
+                  )}
                   {ot.alamat && (
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <MapPin className="h-3 w-3" /> {ot.alamat}

@@ -77,6 +77,20 @@ export default function BKLetters() {
       try {
         const detail = await getSiswaDetail(Number(studentId));
         setStudentDetail(detail);
+        
+        // Auto-fill parent TTL from database if available
+        if (detail.orang_tua && detail.orang_tua.length > 0) {
+          const mainParent = detail.orang_tua.find(ot => ot.hubungan.toLowerCase() === 'ayah') || detail.orang_tua[0];
+          const place = mainParent.tempat_lahir || "";
+          const date = mainParent.tanggal_lahir || "";
+          if (place || date) {
+            setParentTTL(`${place}${place && date ? ', ' : ''}${date}`);
+          } else {
+            setParentTTL("");
+          }
+        } else {
+          setParentTTL("");
+        }
       } catch (error) {
         console.error("Failed to fetch student detail:", error);
       }
@@ -658,7 +672,7 @@ export default function BKLetters() {
                         value={parentTTL}
                         onChange={(e) => setParentTTL(e.target.value)}
                       />
-                      <p className="text-xs text-muted-foreground">Karena data TTL belum tersedia di database, silakan isi manual.</p>
+                      <p className="text-xs text-muted-foreground font-medium text-emerald-600 dark:text-emerald-400">Data otomatis terisi dari basis data.</p>
                     </div>
                   )}
                 </div>

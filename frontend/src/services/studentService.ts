@@ -42,6 +42,8 @@ export interface OrangTuaDetail {
     hubungan: string;
     telp: string;
     pekerjaan: string;
+    tanggal_lahir?: string;
+    tempat_lahir?: string;
     alamat: string;
 }
 
@@ -79,6 +81,8 @@ export interface OrangTuaPayload {
     hubungan: string;
     telp: string;
     pekerjaan: string;
+    tanggal_lahir?: string;
+    tempat_lahir?: string;
     alamat: string;
 }
 

@@ -6,6 +6,8 @@ export interface ApiOrangTua {
     hubungan: string;
     telp: string;
     pekerjaan: string;
+    tanggal_lahir?: string;
+    tempat_lahir?: string;
     alamat: string;
 }
 

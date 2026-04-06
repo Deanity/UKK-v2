@@ -58,6 +58,8 @@ CREATE TABLE `orang_tua` (
   `hubungan` enum('ayah','ibu') NOT NULL,
   `telp` varchar(20) DEFAULT NULL,
   `pekerjaan` varchar(100) DEFAULT NULL,
+  `tanggal_lahir` date DEFAULT NULL,
+  `tempat_lahir` varchar(100) DEFAULT NULL,
   `alamat` varchar(255) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT NULL,

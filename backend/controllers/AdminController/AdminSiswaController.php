@@ -51,7 +51,7 @@ class AdminSiswaController {
 
         // ambil data orang tua (ayah & ibu)
         $ortuStmt = $pdo->prepare("
-            SELECT id, nama, hubungan, telp, pekerjaan, alamat
+            SELECT id, nama, hubungan, telp, pekerjaan, tempat_lahir, tanggal_lahir, alamat
             FROM orang_tua
             WHERE id_siswa = ? AND deleted_at IS NULL
             ORDER BY hubungan ASC
@@ -111,8 +111,8 @@ class AdminSiswaController {
 
             $stmtParent = $pdo->prepare("
                 INSERT INTO orang_tua
-                (id_siswa, nama, hubungan, telp, pekerjaan, alamat, created_at)
-                VALUES (?,?,?,?,?,?,NOW())
+                (id_siswa, nama, hubungan, telp, pekerjaan, tempat_lahir, tanggal_lahir, alamat, created_at)
+                VALUES (?,?,?,?,?,?,?,?,NOW())
             ");
 
             foreach ($input['orang_tua'] as $ortu) {
@@ -122,6 +122,8 @@ class AdminSiswaController {
                     $ortu['hubungan'], // ayah / ibu
                     $ortu['telp'] ?? null,
                     $ortu['pekerjaan'] ?? null,
+                    !empty($ortu['tempat_lahir']) ? $ortu['tempat_lahir'] : null,
+                    !empty($ortu['tanggal_lahir']) ? $ortu['tanggal_lahir'] : null,
                     $ortu['alamat'] ?? null
                 ]);
             }
@@ -133,8 +135,8 @@ class AdminSiswaController {
                 "message" => "Siswa & orang tua berhasil ditambahkan"
             ], 201);
 
-        } catch (Exception $e) {
-            $pdo->rollBack();
+        } catch (Throwable $e) {
+            if ($pdo->inTransaction()) $pdo->rollBack();
             Response::json([
                 "status" => false,
                 "message" => $e->getMessage()
@@ -200,10 +202,12 @@ class AdminSiswaController {
             $input['total_poin'],
             $id
         ]);
-
-        // 👨‍👩‍👧 UPDATE / INSERT ORANG TUA
-        if (!empty($input['orang_tua']) && is_array($input['orang_tua'])) {
+                
+        // 👨‍👩‍👧 UPDATE / INSERT / DELETE ORANG TUA
+        if (isset($input['orang_tua']) && is_array($input['orang_tua'])) {
+            $hubunganSent = [];
             foreach ($input['orang_tua'] as $ot) {
+                $hubunganSent[] = $ot['hubungan'];
 
                 $cekOt = $pdo->prepare("
                     SELECT id FROM orang_tua
@@ -219,6 +223,8 @@ class AdminSiswaController {
                             nama = ?,
                             telp = ?,
                             pekerjaan = ?,
+                            tempat_lahir = ?,
+                            tanggal_lahir = ?,
                             alamat = ?,
                             updated_at = NOW()
                         WHERE id = ?
@@ -227,6 +233,8 @@ class AdminSiswaController {
                         $ot['nama'],
                         $ot['telp'],
                         $ot['pekerjaan'],
+                        !empty($ot['tempat_lahir']) ? $ot['tempat_lahir'] : null,
+                        !empty($ot['tanggal_lahir']) ? $ot['tanggal_lahir'] : null,
                         $ot['alamat'],
                         $exist['id']
                     ]);
@@ -234,8 +242,8 @@ class AdminSiswaController {
                     // INSERT
                     $insertOt = $pdo->prepare("
                         INSERT INTO orang_tua
-                        (id_siswa, nama, hubungan, telp, pekerjaan, alamat, created_at)
-                        VALUES (?,?,?,?,?,?,NOW())
+                        (id_siswa, nama, hubungan, telp, pekerjaan, tempat_lahir, tanggal_lahir, alamat, created_at)
+                        VALUES (?,?,?,?,?,?,?,?,NOW())
                     ");
                     $insertOt->execute([
                         $id,
@@ -243,9 +251,24 @@ class AdminSiswaController {
                         $ot['hubungan'],
                         $ot['telp'],
                         $ot['pekerjaan'],
+                        !empty($ot['tempat_lahir']) ? $ot['tempat_lahir'] : null,
+                        !empty($ot['tanggal_lahir']) ? $ot['tanggal_lahir'] : null,
                         $ot['alamat']
                     ]);
                 }
+            }
+
+            // 🗑️ DELETE yang dihapus dari list
+            if (empty($hubunganSent)) {
+                $deleteEverything = $pdo->prepare("UPDATE orang_tua SET deleted_at = NOW() WHERE id_siswa = ? AND deleted_at IS NULL");
+                $deleteEverything->execute([$id]);
+            } else {
+                $placeholders = implode(',', array_fill(0, count($hubunganSent), '?'));
+                $deleteOthers = $pdo->prepare("
+                    UPDATE orang_tua SET deleted_at = NOW() 
+                    WHERE id_siswa = ? AND hubungan NOT IN ($placeholders) AND deleted_at IS NULL
+                ");
+                $deleteOthers->execute(array_merge([$id], $hubunganSent));
             }
         }
 
