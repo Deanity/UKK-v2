@@ -135,8 +135,7 @@ class AdminGuruController {
     }
 
     /**
-     * Memperbarui data umum dari guru yang sudah ada.
-     * Catatan: Endpoint ini tidak ditujukan untuk mengganti / update password dan username.
+     * Memperbarui data guru yang sudah ada, termasuk username.
      * Endpoint: PUT /api/admin/guru/{id}
      *
      * @param int|string $id ID guru yang akan diedit
@@ -149,9 +148,34 @@ class AdminGuruController {
         // Decode data JSON dari body request
         $input = json_decode(file_get_contents("php://input"), true);
 
-        // Menyiapkan query untuk melakukan perubahan data guru
+        // Validasi field wajib
+        $required = ['username', 'nama', 'kode_guru', 'jenis_kelamin', 'email', 'role'];
+        foreach ($required as $field) {
+            if (empty($input[$field])) {
+                Response::json([
+                    "status" => false,
+                    "message" => "Field $field wajib diisi"
+                ], 422);
+            }
+        }
+
+        // Cek apakah username baru sudah dipakai guru lain (selain guru yang sedang diedit)
+        $checkUsername = $pdo->prepare("
+            SELECT id FROM guru
+            WHERE username = ? AND id != ? AND deleted_at IS NULL
+        ");
+        $checkUsername->execute([$input['username'], $id]);
+        if ($checkUsername->fetch()) {
+            Response::json([
+                "status" => false,
+                "message" => "Username sudah digunakan oleh guru lain"
+            ], 409);
+        }
+
+        // Menyiapkan query update termasuk username
         $stmt = $pdo->prepare("
             UPDATE guru SET
+                username = ?,
                 nama = ?,
                 kode_guru = ?,
                 jenis_kelamin = ?,
@@ -161,8 +185,9 @@ class AdminGuruController {
             WHERE id = ? AND deleted_at IS NULL
         ");
 
-        // Eksekusi query dengan menyuntikkan data input baru dan menyesuaikan kondisi limitasi ke ID terkait
+        // Eksekusi query
         $stmt->execute([
+            $input['username'],
             $input['nama'],
             $input['kode_guru'],
             $input['jenis_kelamin'],
@@ -171,7 +196,7 @@ class AdminGuruController {
             $id
         ]);
 
-        // Kembalikan respons sukses berhasil diperbarui
+        // Kembalikan respons sukses
         Response::json([
             "status" => true,
             "message" => "Data guru berhasil diperbarui"

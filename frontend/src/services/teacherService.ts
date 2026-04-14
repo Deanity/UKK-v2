@@ -45,8 +45,8 @@ export interface CreateTeacherPayload {
 }
 
 // ─── Tipe payload Update ──────────────────────────────────────────
-// username & password TIDAK bisa diubah via PUT (sesuai dokumentasi)
 export interface UpdateTeacherPayload {
+    username: string;
     nama: string;
     kode_guru: string;
     jenis_kelamin: string;

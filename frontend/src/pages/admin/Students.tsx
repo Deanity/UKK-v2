@@ -241,16 +241,16 @@ export default function AdminStudents() {
   }, []);
 
   // ─── Filter opsi dinamis ──────────────────────────────────────────
-  const kelasOptions = ["all", ...Array.from(new Set(students.map((s) => s.kelas))).sort()];
-  const jurusanOptions = ["all", ...Array.from(new Set(students.map((s) => s.jurusan))).sort()];
+  const kelasOptions = ["all", ...Array.from(new Set(students.map((s) => s.kelas.trim()))).filter(Boolean).sort()];
+  const jurusanOptions = ["all", ...Array.from(new Set(students.map((s) => s.jurusan.trim()))).filter(Boolean).sort()];
 
   // ─── Filter + Paging ─────────────────────────────────────────────
   const filtered = students.filter((s) => {
     const matchSearch =
       s.nama.toLowerCase().includes(search.toLowerCase()) ||
       String(s.nis).includes(search);
-    const matchKelas = filterKelas === "all" || s.kelas === filterKelas;
-    const matchJurusan = filterJurusan === "all" || s.jurusan === filterJurusan;
+    const matchKelas = filterKelas === "all" || s.kelas.trim() === filterKelas;
+    const matchJurusan = filterJurusan === "all" || s.jurusan.trim() === filterJurusan;
     return matchSearch && matchKelas && matchJurusan;
   });
   const totalPages = Math.ceil(filtered.length / perPage);

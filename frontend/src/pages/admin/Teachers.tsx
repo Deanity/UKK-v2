@@ -220,8 +220,9 @@ export default function AdminTeachers() {
   // ─── Submit EDIT ──────────────────────────────────────────────────
   const handleUpdate = async () => {
     if (!validateForm() || !editTargetId) return;
-    // username & password tidak dikirim saat update (sesuai dokumentasi API)
+    // username disertakan agar bisa diubah via PUT
     const payload: UpdateTeacherPayload = {
+      username: form.username,
       nama: form.nama,
       kode_guru: form.kode_guru,
       jenis_kelamin: form.jenis_kelamin,
@@ -343,10 +344,10 @@ export default function AdminTeachers() {
                     <TableCell>{t.email}</TableCell>
                     <TableCell>
                       <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${t.role === "admin"
-                          ? "bg-purple-500/10 text-purple-500 border-purple-500/20"
-                          : t.role === "bk"
-                            ? "bg-blue-500/10 text-blue-500 border-blue-500/20"
-                            : "bg-muted text-muted-foreground border-border"
+                        ? "bg-purple-500/10 text-purple-500 border-purple-500/20"
+                        : t.role === "bk"
+                          ? "bg-blue-500/10 text-blue-500 border-blue-500/20"
+                          : "bg-muted text-muted-foreground border-border"
                         }`}>
                         {roleLabel[t.role] ?? t.role}
                       </span>
@@ -408,12 +409,15 @@ export default function AdminTeachers() {
                 </div>
               )}
 
-              {/* Jika edit, tampilkan username sebagai read-only info */}
+              {/* Jika edit, tampilkan username yang bisa diubah */}
               {modalMode === "edit" && (
                 <div className="space-y-1.5">
-                  <Label>Username</Label>
-                  <Input value={form.username} disabled className="bg-muted text-muted-foreground" />
-                  <p className="text-xs text-muted-foreground">Username tidak dapat diubah.</p>
+                  <Label>Username <span className="text-destructive">*</span></Label>
+                  <Input
+                    value={form.username}
+                    onChange={(e) => setForm((p) => ({ ...p, username: e.target.value }))}
+                    placeholder="Contoh: guru01"
+                  />
                 </div>
               )}
 
