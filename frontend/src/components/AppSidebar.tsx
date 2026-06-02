@@ -28,7 +28,7 @@ import {
 const menuByRole: Record<string, { title: string; url: string; icon: any }[]> = {
   admin: [
     { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-    { title: "Input Pelanggaran", url: "/guru/input", icon: PenLine },
+    { title: "Input Pelanggaran", url: "/bk/violations", icon: PenLine },
     { title: "Data Siswa", url: "/admin/students", icon: Users },
     { title: "Data Guru", url: "/admin/teachers", icon: UserCog },
     { title: "Jenis Pelanggaran", url: "/admin/violation-types", icon: AlertTriangle },
